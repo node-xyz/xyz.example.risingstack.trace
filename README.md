@@ -1,12 +1,12 @@
 # Integrate node-xyz With RisingStack Trace
 
-In this article, we will discuss how [node-xyz]() can be integrated to work with RisingStack Trace.
+In this article, we will discuss how [node-xyz](https://github.com/node-xyz) can be integrated to work with [RisingStack Trace](https://trace.risingstack.com/).
 
 ### What is node-xyz?
 
 node-xyz is microservice microframework for node. It is a _low level_ , _minimal_, yet **comprehensive** toolkit that can be used to easily develop and deploy microservices. node-xyz consists of two main components:
-  - `xyz-core`: which is the microframework that we will be using to write our services
-  - `xyz-cli` which is the command line tool that we will be using to deploy the services. `xyz-cli` can be configured to work with Trace very easily.
+  - [`xyz-core`](https://github.com/node-xyz/xyz-core): which is the microframework that we will be using to write our services
+  - [`xyz-cli`](https://github.com/node-xyz/xyz-cli) which is the command line tool that we will be using to deploy the services. `xyz-cli` can be configured to work with Trace very easily.
 
 This tutorial is using `xyz-core v.0.4` and `xyz-cli v0.4.1`. Since node-xyz is being heavily developed at the time, there is the possibility of minor changes in the future. The version of the CLI tool that we will be using is also important because passing environment variables has been added in this version.
 
@@ -74,6 +74,8 @@ worker.register('/task/io', (payload, response) => {
   }
 })
 ```
+
+> Even for this small example, it's worth mentioning that placing an IO intensive and a CPU intensive thask in one process is not a good idea. Nonetheless, the aim of this tutorial isn't to teach you about microservices. It's about xyz and Trace
 
 ### Client Service
 
@@ -158,7 +160,7 @@ Let's write the last service, Front
 
 ## Front Service
 
-A front service should usually accept requests from external clients and translate them into internal messages. This process can be quite complicated depending on the business logic of the entire system. Yet again, we will use just a simple form of translation for simplicity. In the front service, an [Express]() server will accept only post requests with `/service?service_path=SERVICE_PATH` url. It will also send responses to the external clients since all messages are HTTP and we simply can do that (note that this wouldn't have been **easily** possible with [UDP]() or Async messaging). Let's see the code:
+A front service should usually accept requests from external clients and translate them into internal messages. This process can be quite complicated depending on the business logic of the entire system. Yet again, we will use just a simple form of translation for simplicity. In the front service, an [Express](https://expressjs.com/) server will accept only post requests with `/service?service_path=SERVICE_PATH` url. It will also send responses to the external clients since all messages are HTTP and we simply can do that (note that this wouldn't have been **easily** possible with [UDP](https://node-xyz.github.io/documentations/advance/server-route/) or Async messaging). Let's see the code:
 
 
 ```javascript
@@ -232,7 +234,7 @@ Notes about all three kinds of services:
   - Internal messages are sent via `Client` instance while external message are gone through `Front`
   - Note that all nodes use their `selfConf.host` as their global identifier, so be sure to replace that with a valid static and remote IP if you are testing this code in a VPS.
   - All nodes will have a `selfConf.seed` instead of having `systemConf.nodes` to sync and discover other services. This is because we want to deploy more instances of each service later.
-  - While Sync message passing is fine for external clients, usually it is preferable to use an Async messaging for internal messages. In this tutorial, we will use HTTP Sync message for all communications for simplicity. xyz provides [some Async messaging mechanisms]() that you can use.
+  - While Sync message passing is fine for external clients, usually it is preferable to use an Async messaging for internal messages. In this tutorial, we will use HTTP Sync message for all communications for simplicity. xyz provides [some Async messaging mechanisms](https://github.com/node-xyz/xyz.rsmq.single.bootstrap/tree/master) that you can use.
 
 ## Wrapping it up with xyz-cli
 
@@ -270,7 +272,7 @@ Create a file named `xyz.json`:
 
 Notes:
 
-  - CLI will override ports of you provide them. In this case, we are giving them with the same values that they had in `selfConf.transport.0.port`. You can [read this page to learn more about how xyz overrides configurations]() such as ports.
+  - CLI will override ports of you provide them. In this case, we are giving them with the same values that they had in `selfConf.transport.0.port`. You can [read this page to learn more about how xyz overrides configurations](https://node-xyz.github.io/documentations/advance/configuration) such as ports.
   - each object in `nodes[]` accepts more options, but we are not filling them now for simplicity.
   - `stdio` indicates the destination of each process's `stdout` and `stderr`. By default, it's `console` which is not good now because the logs of all nodes will be printed in one terminal. If you use `file` value for this key, like now, a new folder named `log` will be created and each process' log will be written to a separate file. This is much more reasonable.
 
@@ -314,9 +316,9 @@ creating logfile ./log/worker.ms@127.0.0.1:6000.log
 
 ```
 
-xyz-cli is an interactive command line tool, meaning that you can keep entering commands to [get more info and do more stuff, like killing a node, creating a new one]() and... You can further investigate your nodes with commands such as `top:`
+xyz-cli is an interactive command line tool, meaning that you can keep entering commands to [get more info and do more stuff, like killing a node, creating a new one](https://github.com/node-xyz/xyz-cli#kill-identifier) and... You can further investigate your nodes with commands such as `top:`
 
-![]()
+![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/top.png?raw=true)
 
 Which makes sense because the `front` node is basically idle at the moment, and the `client` is sending messages to `worker` (~13msg/sec).
 
@@ -332,7 +334,7 @@ While it's just about...  **ok** to see a list of nodes deployed with xyz-cli, w
 
 ### Adding trance Configuration
 
-In order to get started with trace, you can sign up for a 14 day [trial]. This will be just enough to get us started with this service. Next, you should read the [Getting Started] section. As mentioned, there are two ways to integrate a node process with Trace:
+In order to get started with trace, you can sign up for a 14 day [trial](https://trace.risingstack.com/app/). This will be just enough to get us started with this service. Next, you should read the [Getting Started](https://trace-docs.risingstack.com/docs) section. As mentioned, there are two ways to integrate a node process with Trace:
   - using environment variables
   - using a config file.
 
@@ -387,22 +389,22 @@ And there it is! Out sweet microservices appear inside Trace:
 
 Services should appear in your panel:
 
-![]()
+![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/trace_setting.png?raw=true)
 
 The Topology should also start to shape:
 
-![]()
+![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/trace_top_1.png?raw=true)
 
 With message rates being added within a second:
 
-![]()
+![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/trace_top_2.png?raw=true)
 
 Also, don't forget to see how the Metrics page to see some important information.
 
-![]()
+![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/met.png?raw=true)
 
 Notes:
-  - During this tutorial, I deployed all services in a single VPS and ran a benchmark test on them using [Apache Benchmark, aka. ab]. That's why you see an external client sending messages to `Frot`. The benchmark was similar to this:
+  - During this tutorial, I deployed all services in a single VPS and ran a benchmark test on them using [Apache Benchmark, aka. ab](https://httpd.apache.org/docs/2.4/programs/ab.html). That's why you see an external client sending messages to `Frot`. The benchmark was similar to this:
 
   `ab -k -p post.data -c 10 -n 20000 HTTP://SERVER_IP:4001/service\?service_path\=task/CPU`
 
@@ -412,11 +414,11 @@ Notes:
   - Aside from the thick lines between
     - Client -> Worker
     - External -> Front | Front -> Worker
-  which were our job, what are the other thinner lines indicating small message rates (~10rmp)? what about the circulating lines from one node to itself? Those are because of the [Default Ping]() mechanism in xyz. This mechanism basically keeps track of all nodes inside a system and what functions they are exposing, hence it need to send some messages under the hood every once in a while to check other nodes. This is why you can simply call `ms.call({service: ...})` and the message will be redirected automatically, even if the destination is in another host all the way across the globe.
+  which were our job, what are the other thinner lines indicating small message rates (~10rmp)? what about the circulating lines from one node to itself? Those are because of the [Default Ping](https://node-xyz.github.io/documentations/advance/ping-mechanisms) mechanism in xyz. This mechanism basically keeps track of all nodes inside a system and what functions they are exposing, hence it need to send some messages under the hood every once in a while to check other nodes. This is why you can simply call `ms.call({service: ...})` and the message will be redirected automatically, even if the destination is in another host all the way across the globe.
 
   - During the peak of response time in the last image, I was taking heavy benchmarks from `?service_path\=task/io`, which is more intensive.
 
-You can read the full documentation of xyz and Trace if you want to learn more!
+You can read the [full documentation of xyz](https://node-xyz.github.io/documentations) and [Trace](https://trace-docs.risingstack.com/) if you want to learn more!
 
 The full code of this tutorial can be obtained from [here](https://github.com/node-xyz/xyz.example.risingstack.trace)
 
