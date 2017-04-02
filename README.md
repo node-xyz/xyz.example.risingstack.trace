@@ -342,7 +342,7 @@ the message rates given make sense because the `front` node is basically idle at
 
 >You might notice that all nodes, regardless of their `stdio` status, will start writing their outputs to file/terminal **only after they have been initialized**. This is a clean approach, yet it kinda makes it hard to catch exceptions at runtime, like things as simple as a typo. You can always add a `-e` to `xyz dev` command if you sense that something is wrong. This flag will cause all nodes to output their logs to the current terminal **during initialization phase**, which is very critical. So if any of them have an exception, you'll see it.
 
-We can talk for another hour about xyz-core and xyz-cli, but as you might recall from the title of this article, this wan't our main goal!. Let's keep things simple like this and switch this project to be monitored by Trace.
+We can talk for another hour about xyz-core and xyz-cli, but as you might recall from the title of this article, this wasn't our main goal!. Let's keep things simple like this and switch this project to be monitored by Trace.
 
 > PS. In case you _actually_ want to read for another twenty minutes about xyz you can read these [two](https://medium.com/@kianpeymani/a-microservice-microframework-for-node-node-xyz-part-1-5b9a2d40716) [articles](https://medium.com/@kianpeymani/a-microservice-microframework-for-node-node-xyz-part-2-a1d430b761ee) on Medium.
 
@@ -422,25 +422,25 @@ Also, don't forget to see how the Metrics page to see some important information
 ![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/met.png?raw=true)
 
 Notes:
-  - During this tutorial, I deployed all services in a single VPS and ran a benchmark test on them using [Apache Benchmark, aka. ab](https://httpd.apache.org/docs/2.4/programs/ab.html). That's why you see an external client sending messages to `Frot`. The benchmark was similar to this:
+  - During this tutorial, I deployed all services in a single VPS and ran a benchmark test on them using [Apache Benchmark, aka. ab](https://httpd.apache.org/docs/2.4/programs/ab.html). That's why you see an external client sending messages to `Front`. The benchmark was similar to this:
 
   `ab -k -p post.data -c 10 -n 20000 HTTP://SERVER_IP:4001/service\?service_path\=task/cpu`
 
   `post.data` file is irrelevant since we are not using the post body but the query instead.
 
-  Remember that `Frot` node was listening for **external clients** on port 4001.
+  Remember that `Front` node was listening for **external clients** on port 4001.
   - Aside from the thick lines between
     - Client -> Worker
     - External -> Front | Front -> Worker
-    
+
   which were our job, what are the other thinner lines indicating small message rates (~10rmp)? what about the circulating lines from one node to itself? Those are because of the [Default Ping](https://node-xyz.github.io/documentations/advance/ping-mechanisms) mechanism in xyz. This mechanism basically keeps track of all nodes inside a system and what functions they are exposing, hence it need to send some messages under the hood every once in a while to check other nodes. This is why you can simply call `ms.call({service: ...})` and the message will be redirected automatically, even if the destination is in another host all the way across the globe.
 
   - During the peak of response time in the last image, I was taking heavy benchmarks from `?service_path\=task/io`, which is more intensive.
 
 You can read the [full documentation of xyz](https://node-xyz.github.io/documentations) and [Trace](https://trace-docs.risingstack.com/) if you want to learn more!
 
-The full code of this tutorial can be obtained from [here](https://github.com/node-xyz/xyz.example.risingstack.trace)
+The full code of this tutorial can be obtained from [here](https://github.com/node-xyz/xyz.example.risingstack.trace).
 
-## Appendix: Using a load balancer
+I hope that you have enjoyed this article. I will sone publish the second part of this article, in which we will scale out our worker service and use an internal load balancer to distribute the messages among them.
 
-Coming soon.
+In the meantime, any comments or suggestions are welcomed.
