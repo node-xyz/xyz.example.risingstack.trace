@@ -5,14 +5,14 @@ In this article, we will discuss how [node-xyz](https://github.com/node-xyz) can
 ### What is node-xyz?
 
 node-xyz is microservice microframework for node. It is a _low level_ , _minimal_, yet **comprehensive** toolkit that can be used to easily develop and deploy microservices. node-xyz consists of two main components:
-  - [`xyz-core`](https://github.com/node-xyz/xyz-core): which is the microframework that we will be using to write our services
-  - [`xyz-cli`](https://github.com/node-xyz/xyz-cli) which is the command line tool that we will be using to deploy the services. `xyz-cli` can be configured to work with Trace very easily.
+  - [`xyz-core`](https://github.com/node-xyz/xyz-core): which is the microframework that we will be using to write our services.
+  - [`xyz-cli`](https://github.com/node-xyz/xyz-cli) which is the command line tool that we will be using to deploy our services. `xyz-cli` can be configured to work with Trace very easily.
 
-This tutorial is using `xyz-core v.0.4` and `xyz-cli v0.4.1`. Since node-xyz is being heavily developed at the time, there is the possibility of minor changes in the future. The version of the CLI tool that we will be using is also important because passing environment variables has been added in this version.
+This tutorial is using `xyz-core v.0.4` and `xyz-cli v0.4.1`. Since node-xyz is being heavily developed at the time, there is the possibility of minor changes in the future.
 
 ## Writing the microservices
 
-In this tutorial, we will not focus heavily on the details of microservices since it can get pretty complicated. Instead, we will create mock tasks with different types (CPU and IO tasks) that represent real tasks.
+In this tutorial, we will not focus heavily on the details of microservices since it can get pretty complicated and dependent on your application domain. Instead, we will create mock tasks with different types (CPU and IO tasks) that represent real tasks and deploy them as our microservices.
 
 We will create 2 service types:
 
@@ -20,9 +20,11 @@ We will create 2 service types:
   - a **Worker** service: which exposes the two tasks explained above.
   - a **Client** service: this node will represent **internal clients** that might need to use `Worker`'s services.
 
+The services will be deployed to port 4000, 6000 and 5000 respectively.
+
 We will also launch a series of _attacks_ to our **Front** node to represent **external** clients.
 
-I will explain some of the details of `xyz-core` in this tutorial, but I highly recommend reading xyz's [Getting Started](https://node-xyz.github.io/documentations/getting-started/) document to get more familiar.
+I will explain some of the details of `xyz-core` in this tutorial, but I highly recommend reading xyz's [Getting Started](https://node-xyz.github.io/documentations/getting-started/) document to get more familiar before going any further.
 
 Let's start writing the microservices:
 
@@ -114,6 +116,8 @@ setInterval(() => {
 Note that:
 
   - For simplicity, all messages are empty and don't have any payload.
+  - No need to say, the path of ther service, like `/task/io`, is its **identifier** and should be used by a caller to reach to correct callee.
+  - As you might've seen, none of the nodes are informed about the `IP:PORT` of one another. They use a seed node to join the system. This procedure is a part of xyz's Ping mechanism which helps services discover and explore each other.
 
 At this point, we can have a small test. We have created two services, namely `client.ms@127.0.0.1:5000` and `worker.ms@127.0.0.1:6000` and we can run them both to see them working. For now, we will not use `xyz-cli` and run them with `node` command.
 
@@ -226,7 +230,15 @@ Connection: keep-alive
 Which is totally fine since `front` hasn't connected to other nodes using its seed node. If fact, you can see how `front` has responded locally to the message:
 
 ```bash
+front.js log
 [2017-4-2 17:8:17][front.ms@127.0.0.1:4000] warn :: Sending a message to /task/io from first find strategy failed (Local Response)
+```
+
+Which is logged after Front fails to execute
+
+```javascript
+front.call({
+  servicePath: req.query['service_path']}, () => {...})
 ```
 
 
@@ -287,6 +299,10 @@ with this file in the root of all of your files (since our services are simple n
   // and probably:
   - node_modules
   - package.json
+  - /log
+    - front@127.0.0.1:4000.log
+    - client@127.0.0.1:5000.log
+    - worker@127.0.0.1:6000.log
 ```
 
 you can run:
@@ -320,13 +336,15 @@ xyz-cli is an interactive command line tool, meaning that you can keep entering 
 
 ![](https://github.com/node-xyz/xyz.example.risingstack.trace/blob/master/media/top.png?raw=true)
 
-Which makes sense because the `front` node is basically idle at the moment, and the `client` is sending messages to `worker` (~13msg/sec).
+the message rates given make sense because the `front` node is basically idle at the moment, and the `client` is sending messages to `worker` (~13msg/sec).
 
-> Wondering what `Ping Interval` is? See this page.
+> Wondering what `Ping Interval` is? See [this page](https://node-xyz.github.io/documentations/advance/ping-mechanisms).
 
->You might notice that all nodes, regardless of their `stdio` status, will start writing their outputs to file/terminal after they have been initialized. This is a clean approach, yet it kinda makes it hard to catch exceptions at runtime, things as simple as a typo. You can always add a `-e` to `xyz dev` command if you sense that something is wrong. This flag will cause all nodes to output their logs to the current terminal during initialization phase, so if any of them has an exception, you'll see it.
+>You might notice that all nodes, regardless of their `stdio` status, will start writing their outputs to file/terminal **only after they have been initialized**. This is a clean approach, yet it kinda makes it hard to catch exceptions at runtime, like things as simple as a typo. You can always add a `-e` to `xyz dev` command if you sense that something is wrong. This flag will cause all nodes to output their logs to the current terminal **during initialization phase**, which is very critical. So if any of them have an exception, you'll see it.
 
 We can talk for another hour about xyz-core and xyz-cli, but as you might recall from the title of this article, this wan't our main goal!. Let's keep things simple like this and switch this project to be monitored by Trace.
+
+> PS. In case you _actually_ want to read for another twenty minutes about xyz you can read these [two](https://medium.com/@kianpeymani/a-microservice-microframework-for-node-node-xyz-part-1-5b9a2d40716) [articles](https://medium.com/@kianpeymani/a-microservice-microframework-for-node-node-xyz-part-2-a1d430b761ee) on Medium.
 
 ## Monitoring with Trace
 
@@ -406,7 +424,7 @@ Also, don't forget to see how the Metrics page to see some important information
 Notes:
   - During this tutorial, I deployed all services in a single VPS and ran a benchmark test on them using [Apache Benchmark, aka. ab](https://httpd.apache.org/docs/2.4/programs/ab.html). That's why you see an external client sending messages to `Frot`. The benchmark was similar to this:
 
-  `ab -k -p post.data -c 10 -n 20000 HTTP://SERVER_IP:4001/service\?service_path\=task/CPU`
+  `ab -k -p post.data -c 10 -n 20000 HTTP://SERVER_IP:4001/service\?service_path\=task/cpu`
 
   `post.data` file is irrelevant since we are not using the post body but the query instead.
 
@@ -414,6 +432,7 @@ Notes:
   - Aside from the thick lines between
     - Client -> Worker
     - External -> Front | Front -> Worker
+    
   which were our job, what are the other thinner lines indicating small message rates (~10rmp)? what about the circulating lines from one node to itself? Those are because of the [Default Ping](https://node-xyz.github.io/documentations/advance/ping-mechanisms) mechanism in xyz. This mechanism basically keeps track of all nodes inside a system and what functions they are exposing, hence it need to send some messages under the hood every once in a while to check other nodes. This is why you can simply call `ms.call({service: ...})` and the message will be redirected automatically, even if the destination is in another host all the way across the globe.
 
   - During the peak of response time in the last image, I was taking heavy benchmarks from `?service_path\=task/io`, which is more intensive.
