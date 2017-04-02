@@ -1,0 +1,25 @@
+{
+  "name": "xyz.example.risingstack.trace",
+  "version": "1.0.0",
+  "description": "xyz integration with Trace",
+  "main": "index.js",
+  "dependencies": {
+    "@risingstack/trace": "^3.5.3",
+    "xyz-core": "^0.4.0",
+    "express": "latest"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/node-xyz/xyz.example.risingstack.trace.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/node-xyz/xyz.example.risingstack.trace/issues"
+  },
+  "homepage": "https://github.com/node-xyz/xyz.example.risingstack.trace#readme"
+}

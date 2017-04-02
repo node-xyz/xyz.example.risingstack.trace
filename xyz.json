@@ -1,0 +1,23 @@
+{
+  "nodes": [
+    {
+      "path": "./front.js",
+      "port": 4000,
+      "stdio": "file",
+      "env": "TRACE_API_KEY {YOUR_API_KEY} TRACE_SERVICE_NAME front"
+
+    },
+    {
+      "path": "./client.js",
+      "port": 5000,
+      "stdio": "file",
+      "env": "TRACE_API_KEY {YOUR_API_KEY} TRACE_SERVICE_NAME client"
+    },
+    {
+      "path": "./worker.js",
+      "port": 6000,
+      "stdio": "file",
+      "env": "TRACE_API_KEY {YOUR_API_KEY} TRACE_SERVICE_NAME worker"
+    }
+  ]
+}
